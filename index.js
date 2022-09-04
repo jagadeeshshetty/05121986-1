@@ -8,13 +8,13 @@ const axios = require('axios');
 const qs = require('qs');
 
 const PORT = process.env.PORT || 3000;
-const storage = multer.diskStorage({
-  destination: './upload/images',
-  filename: function (req, file, cb) {
-    return cb(null, `${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`);
-  }
-});
-const upload = multer({ storage: storage });
+// const storage = multer.diskStorage({
+//   destination: './upload/images',
+//   filename: function (req, file, cb) {
+//     return cb(null, `${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`);
+//   }
+// });
+// const upload = multer({ storage: storage });
 
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
@@ -70,6 +70,22 @@ app.post('/v2/base64ToTxt', async (req, res) => {
   }
 });
 
+async function getText(_base64image, worker) {
+  try {
+    const workerLoad = await worker.load();
+    console.log(workerLoad);
+    await worker.loadLanguage('eng');
+    await worker.initialize('eng');
+    const { data: { text } } = await worker.recognize(_base64image);
+    console.log(text);
+    return { text, workerLoad };
+    // new throws('Error');
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+}
+
 // app.post('/testImgToTxt', upload.single('file'), async (req, res) => {
 //   await worker.load();
 //   await worker.loadLanguage('eng');
@@ -116,53 +132,12 @@ app.post('/v2/base64ToTxt', async (req, res) => {
 //   res.json({ "status": res.statusCode, "message": "File processed successfully", "data": _text, "timeLog": timeLog.toString() });
 // });
 
-// async function getText(_base64image, worker) {
-//   try {
-//     const workerLoad = await worker.load();
-//     console.log(workerLoad);
-//     await worker.loadLanguage('eng');
-//     await worker.initialize('eng');
-//     const { data: { text } } = await worker.recognize(_base64image);
-//     console.log(text);
-//     return { text, workerLoad };
-//     // new throws('Error');
-//   } catch (error) {
-//     console.log(error);
-//     return false;
-//   }
-// }
 
 // async function sleep(ms) {
 //   console.log(`Halt for ${ms / 1000} sec.`);
 //   return new Promise(resolve => setTimeout(resolve, ms));
 // }
 
-
-// async function parse(req, _url) {
-//   var data = qs.stringify({
-//     'base64image': req.body.base64image
-//   });
-//   var config = {
-//     method: 'post',
-//     url: _url,
-//     headers: {
-//       'Content-Type': 'application/x-www-form-urlencoded'
-//     },
-//     data: data
-//   };
-
-//   let response = await axios(config);
-
-//   console.log(response.status);
-
-//   if (response.status === 200) {
-//     console.log(response.data);
-//     return response;
-//   } else {
-//     return response.status;
-//     // res.status(503);
-//   }
-// }
 
 // async function _try() {
 //   try {
